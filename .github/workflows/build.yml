@@ -1,6 +1,6 @@
-on: [ 'push', 'pull_request' ]
-
 name: Build PHP Extensions
+
+on: [ 'push' ]
 
 jobs:
   release:
@@ -10,7 +10,7 @@ jobs:
       release_upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Create Release
         if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
         id: create_release
@@ -29,17 +29,31 @@ jobs:
     needs: release
     strategy:
       matrix:
-        php-version: [ '8.0', '8.1' ]
-        alpine-version: [ '3.15', '3.16' ]
+        php-version: [ '8.1', '8.2', '8.3' ]
+        alpine-version: [ '3.16', '3.17', '3.18', '3.19', '3.20', 'edge' ]
+        exclude:
+          - php-version: '8.3'
+            alpine-version: '3.16'
+          - php-version: '8.3'
+            alpine-version: '3.17'
+          - php-version: '8.3'
+            alpine-version: '3.18'
+          - php-version: '8.2'
+            alpine-version: '3.16'
+          - php-version: '8.2'
+            alpine-version: '3.17'
+          - php-version: '8.1'
+            alpine-version: '3.20'
+          - php-version: '8.1'
+            alpine-version: 'edge'
       max-parallel: 8
       fail-fast: false
     env:
       PHP_VERSION: ${{ matrix.php-version }}
       ALPINE_VERSION: ${{ matrix.alpine-version }}
-      XLS_WRITER_VERSION: "1.5.4"
+      XLS_WRITER_VERSION: '1.5.8'
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build Xlswriter
         run: cd xlswriter && ./build.sh
       - name: Release and Upload Assets
@@ -48,7 +62,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.release.outputs.release_upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          upload_url: ${{ needs.release.outputs.release_upload_url }}
           asset_path: xlswriter/xlswriter-${{ matrix.php-version }}-alpine-v${{ matrix.alpine-version }}.so
           asset_name: xlswriter-${{ matrix.php-version }}-alpine-v${{ matrix.alpine-version }}.so
           asset_content_type: application/octet-stream
@@ -59,17 +73,31 @@ jobs:
     needs: release
     strategy:
       matrix:
-        php-version: [ '8.0', '8.1' ]
-        alpine-version: [ '3.15', '3.16' ]
+        php-version: [ '8.1', '8.2', '8.3' ]
+        alpine-version: [ '3.16', '3.17', '3.18', '3.19', '3.20', 'edge' ]
+        exclude:
+          - php-version: '8.3'
+            alpine-version: '3.16'
+          - php-version: '8.3'
+            alpine-version: '3.17'
+          - php-version: '8.3'
+            alpine-version: '3.18'
+          - php-version: '8.2'
+            alpine-version: '3.16'
+          - php-version: '8.2'
+            alpine-version: '3.17'
+          - php-version: '8.1'
+            alpine-version: '3.20'
+          - php-version: '8.1'
+            alpine-version: 'edge'
       max-parallel: 8
       fail-fast: false
     env:
       PHP_VERSION: ${{ matrix.php-version }}
       ALPINE_VERSION: ${{ matrix.alpine-version }}
-      IMAGICK_VERSION: "3.7.0"
+      IMAGICK_VERSION: '3.7.0'
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build imagick
         run: cd imagick && ./build.sh
       - name: Release and Upload Assets
@@ -78,9 +106,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.release.outputs.release_upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          upload_url: ${{ needs.release.outputs.release_upload_url }}
           asset_path: imagick/imagick-${{ matrix.php-version }}-alpine-v${{ matrix.alpine-version }}.so
           asset_name: imagick-${{ matrix.php-version }}-alpine-v${{ matrix.alpine-version }}.so
           asset_content_type: application/octet-stream
-
-
