@@ -1,10 +1,3 @@
-# PHPJIEBA
-#
-# @link     https://www.hyperf.io
-# @document https://doc.hyperf.io
-# @contact  group@hyperf.io
-# @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
-
 ARG PHP_VERSION
 ARG ALPINE_VERSION
 
